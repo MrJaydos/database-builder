@@ -28,7 +28,7 @@ df = pd.read_csv('name_gender_dataset.csv')
 
 # Insert all names first if not already done
 for _, row in df.iterrows():
-    cursor.exectue('''
+    cursor.execute('''
         INSERT OR IGNORE INTO names (name, gender, count, probability)
         VALUES (?, ?, ?, ?)
 ''', (row['Name'], row['Gender'], row['Count'], row['Probability']))
