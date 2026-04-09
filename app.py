@@ -39,7 +39,7 @@ conn.commit()
 print(f"Names loaded into database")
 
 # Enrich in batches
-BATCH_SIZE = 100
+BATCH_SIZE = 50
 OLLAMA_URL = 'http://192.168.68.73:11434/api/generate'
 
 def enrich_batch(names_batch):
