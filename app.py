@@ -35,3 +35,25 @@ for _, row in df.iterrows():
 conn.commit()
 
 print(f"Names loaded into database")
+
+# Enrich in batches
+BATCH_SIZE = 20
+OLLAMA_URL = 'http://192.168.68.73:11434/api/generate'
+
+def enrich_batch(names_batch):
+    names_list = ', '.join([n for n in names_batch])
+    prompt = f"""For each of these baby names return a JSON array where each object has exactly these fields: name, origin, meaning, style(one of: Classic, Modern, Contemporary, Unique, Cultural).
+Names: {names_list}
+Return only a valid JSON array, no other text, no markdown."""
+    
+
+    try:
+        response = requests.post(OLLAMA_URL, json={
+            "model": "mistral",
+            "prompt": prompt,
+            "stream": False
+            }, timeout=60)
+        return json.loads(response.json()['response'])
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
