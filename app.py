@@ -4,6 +4,7 @@ import sqlite3
 import json
 import time
 
+start_time = time.time()
 
 # Setup database
 conn = sqlite3.connect('names.db')
@@ -66,6 +67,7 @@ total = len(unenriched)
 print(f"{total} names to enrich")
 
 for i in range(0, total, BATCH_SIZE):
+    batch_start = time.time()
     batch = unenriched[i:i+BATCH_SIZE]
     results = enrich_batch(batch)
 
@@ -76,7 +78,12 @@ for i in range(0, total, BATCH_SIZE):
                 WHERE name=?
             ''', (item.get('origin'), item.get('meaning'), item.get('style'), item.get('name')))
         conn.commit()
-        print(f"Progress: {min(i+BATCH_SIZE, total)}/{total}")
+
+        batch_time = time.time() - batch_start
+        elapsed = time.time() - start_time
+        remaining = (elapsed / (i + BATCH_SIZE)) * (total - i - BATCH_SIZE) 
+
+        print(f"Progress: {min(i+BATCH_SIZE, total)}/{total} | Batch: {batch_time:.1f}s |  Elapsed: {elapsed/60:.1f}min | Est. remaining: {remaining/60:.1f}min")
     else:
         print(f"Batch failed, skipping: {batch[:3]}...")
 
