@@ -57,3 +57,29 @@ Return only a valid JSON array, no other text, no markdown."""
     except Exception as e:
         print(f"Error: {e}")
         return None
+    
+# Get unenriched names
+cursor.execute("SELECT name FROM names WHERE origin IS NULL")
+unenriched = [row[0] for row in cursor.fetchall()]
+total = len(unenriched)
+print(f"{total} names to enrich")
+
+for i in range(0, total, BATCH_SIZE):
+    batch = unenriched[i:i+BATCH_SIZE]
+    results = enrich_batch(batch)
+
+    if results:
+        for item in results:
+            cursor.execute('''
+                UPDATE names SET origin=?, meaning=?,style=?
+                WHERE name=?
+            ''', (item.get('origin'), item.get('meaning'), item.get('style'), item.get('name')))
+        conn.commit()
+        print(f"Progress: {min(i+BATCH_SIZE, total)}/{total}")
+    else:
+        print(f"Batch failed, skipping: {batch[:3]}...")
+
+    time.sleep(0.5)
+
+print("Done!")
+conn.close()
