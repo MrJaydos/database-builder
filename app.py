@@ -4,10 +4,6 @@ import sqlite3
 import json
 import time
 
-df = pd.read_csv('names.csv')
-print(df.columns.tolist())
-print(df.head())
-print(len(df))
 
 # Setup database
 conn = sqlite3.connect('names.db')
