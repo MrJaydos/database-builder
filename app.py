@@ -39,7 +39,7 @@ conn.commit()
 print(f"Names loaded into database")
 
 # Enrich in batches
-BATCH_SIZE = 50
+BATCH_SIZE = 100
 OLLAMA_URL = 'http://192.168.68.73:11434/api/generate'
 
 def enrich_batch(names_batch):
@@ -54,7 +54,7 @@ Return only a valid JSON array, no other text, no markdown."""
             "model": "mistral",
             "prompt": prompt,
             "stream": False
-            }, timeout=60)
+            }, timeout=180)
         return json.loads(response.json()['response'])
     except Exception as e:
         print(f"Error: {e}")
