@@ -44,7 +44,9 @@ OLLAMA_URL = 'http://192.168.68.72:11434/api/generate'
 
 def enrich_batch(names_batch):
     names_list = ', '.join([n for n in names_batch])
-    prompt = f"""For each of these baby names return a JSON array where each object has exactly these fields: name, origin, meaning, style(one of: Classic, Modern, Contemporary, Unique, Cultural).
+    prompt = f"""For each of these baby names return a JSON array where each object has exactly these fields: name, origin, meaning, style.
+- style must be a single string, one of: Classic, Modern, Contemporary, Unique, Cultural
+- All values must be strings, not arrays
 Names: {names_list}
 Return only a valid JSON array, no other text, no markdown."""
     
@@ -74,6 +76,12 @@ unenriched = [row[0] for row in cursor.fetchall()]
 total = len(unenriched)
 print(f"{total} names to enrich")
 
+def safe_str(val):
+    """Convert list/other types to string."""
+    if isinstance(val, list):
+        return val[0] if val else None
+    return val
+
 for i in range(0, total, BATCH_SIZE):
     batch_start = time.time()
     batch = unenriched[i:i+BATCH_SIZE]
@@ -82,9 +90,14 @@ for i in range(0, total, BATCH_SIZE):
     if results:
         for item in results:
             cursor.execute('''
-                UPDATE names SET origin=?, meaning=?,style=?
-                WHERE name=?
-            ''', (item.get('origin'), item.get('meaning'), item.get('style'), item.get('name')))
+        UPDATE names SET origin=?, meaning=?, style=?
+        WHERE name=?
+    ''', (
+        safe_str(item.get('origin')),
+        safe_str(item.get('meaning')),
+        safe_str(item.get('style')),   # <-- was the culprit
+        safe_str(item.get('name'))
+    ))
         conn.commit()
 
         batch_time = time.time() - batch_start
