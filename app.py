@@ -55,7 +55,15 @@ Return only a valid JSON array, no other text, no markdown."""
             "prompt": prompt,
             "stream": False
             }, timeout=60)
-        return json.loads(response.json()['response'])
+        raw = response.json().get('response', '')
+        parsed = json.loads(raw)
+        if not isinstance(parsed, list):
+            print(f"Non-list JSON response, skipping batch")
+            return None
+        return parsed
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"Invalid JSON response, skipping batch: {e}")
+        return None
     except Exception as e:
         print(f"Error: {e}")
         return None
