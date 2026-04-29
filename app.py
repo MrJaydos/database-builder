@@ -40,7 +40,7 @@ print(f"Names loaded into database")
 
 # Enrich in batches
 BATCH_SIZE = 20
-OLLAMA_URL = 'http://192.168.68.73:11434/api/generate'
+OLLAMA_URL = 'http://192.168.68.72:11434/api/generate'
 
 def enrich_batch(names_batch):
     names_list = ', '.join([n for n in names_batch])
